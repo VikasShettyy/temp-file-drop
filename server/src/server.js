@@ -8,8 +8,6 @@ try {
         port: config.port,
         host: config.host
     });
-
-} catch (error) {
-
+} catch {
     process.exit(1);
 }
