@@ -16,13 +16,13 @@ export function buildApp() {
     });
 
 
+    // Security headers
     app.register(helmet);
 
 
+    // CORS
     app.register(cors, {
-        
         origin: config.clientUrl,
-
         methods: [
             "GET",
             "POST"
@@ -30,30 +30,39 @@ export function buildApp() {
     });
 
 
+    // Rate limiting
     app.register(rateLimit, {
-
         max: 100,
-
         timeWindow: "1 minute"
     });
 
 
-    app.get(
-        "/api/health",
-        async () => {
+    // Health check
+    app.get("/api/health", async (request, reply) => {
 
-            return {
-                status: "ok"
-            };
-        }
-    );
+        return reply.code(200).send({
+            status: "ok"
+        });
+
+    });
 
 
-    // Upload
+    // Root route
+    app.get("/", async (request, reply) => {
+
+        return reply.code(200).send({
+            status: "ok",
+            message: "Temp File Drop API is running"
+        });
+
+    });
+
+
+    // Upload routes
     app.register(uploadRoutes);
 
 
-    // Download
+    // Download routes
     app.register(downloadRoutes);
 
 
