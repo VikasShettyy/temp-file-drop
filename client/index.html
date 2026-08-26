@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Temporary file transfer"
+    >
+
+    <title>Temp File Drop</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+<body>
+
+    <main class="container">
+
+        <!-- ========================================= -->
+        <!-- UPLOAD -->
+        <!-- ========================================= -->
+
+        <section class="card">
+
+            <div class="brand">
+                TEMP FILE DROP
+            </div>
+
+            <h1>
+                Transfer files<br>
+                without an account.
+            </h1>
+
+            <p class="subtitle">
+                Upload a file and receive a temporary
+                access code.
+            </p>
+
+
+            <!-- Upload area -->
+
+            <div
+                id="dropZone"
+                class="drop-zone"
+            >
+
+                <div class="upload-icon">
+                    ↑
+                </div>
+
+                <p>
+                    Drop your files here
+                </p>
+
+                <span>
+                    or
+                </span>
+
+                <button
+                    id="selectButton"
+                    type="button"
+                >
+                    Select Files
+                </button>
+
+                <input
+                    id="fileInput"
+                    type="file"
+                    multiple
+                    hidden
+                >
+
+            </div>
+
+
+            <!-- Uploaded files -->
+
+            <div
+                id="fileList"
+                class="file-list"
+            ></div>
+
+
+            <p class="retention">
+                Files are automatically deleted after 30 days.
+            </p>
+
+        </section>
+
+
+        <!-- ========================================= -->
+        <!-- DOWNLOAD -->
+        <!-- ========================================= -->
+
+        <section class="card download-section">
+
+            <div class="brand">
+                DOWNLOAD
+            </div>
+
+            <h2>
+                Retrieve your file.
+            </h2>
+
+            <p class="subtitle">
+                Enter the 4-digit access code.
+            </p>
+
+
+            <div class="download-form">
+
+                <input
+                    id="downloadCode"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="4"
+                    pattern="[0-9]{4}"
+                    placeholder="0000"
+                    autocomplete="off"
+                    aria-label="4-digit access code"
+                >
+
+                <button
+                    id="downloadButton"
+                    type="button"
+                >
+                    Download
+                </button>
+
+            </div>
+
+
+            <div
+                id="downloadStatus"
+                class="download-status"
+                aria-live="polite"
+            ></div>
+
+        </section>
+
+    </main>
+
+<!-- Toast notifications -->
+<div
+    id="toastContainer"
+    class="toast-container"
+    aria-live="polite"
+    aria-atomic="true"
+></div>
+    <!-- Load JavaScript AFTER the HTML -->
+    <script src="app.js"></script>
+    
+</body>
+
+</html>

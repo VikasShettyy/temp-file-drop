@@ -1,0 +1,20 @@
+[
+  {
+    "corsRuleName": "tempFileDropUpload",
+    "allowedOrigins": [
+      "http://localhost:5500"
+    ],
+    "allowedHeaders": [
+      "*"
+    ],
+    "allowedOperations": [
+      "s3_put_object",
+      "s3_get_object",
+      "s3_head_object"
+    ],
+    "exposeHeaders": [
+      "ETag"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]
