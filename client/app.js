@@ -1,5 +1,4 @@
-const API_URL =
-    "temp-file-drop.onrender.com";
+const API_URL = "https://temp-file-drop.onrender.com";
 
 
 // ============================================================

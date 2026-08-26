@@ -20,7 +20,7 @@ export function buildApp() {
 
 
     app.register(cors, {
-
+        
         origin: config.clientUrl,
 
         methods: [

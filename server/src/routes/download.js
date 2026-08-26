@@ -28,7 +28,6 @@ export default async function downloadRoutes(app) {
                     typeof accessCode !== "string" ||
                     !/^\d{4}$/.test(accessCode)
                 ) {
-
                     return reply.code(400).send({
                         error: "Invalid access code"
                     });
@@ -65,6 +64,10 @@ export default async function downloadRoutes(app) {
                     );
 
 
+                // --------------------------------
+                // File not found
+                // --------------------------------
+
                 if (result.rows.length === 0) {
 
                     return reply.code(404).send({
@@ -93,14 +96,12 @@ export default async function downloadRoutes(app) {
 
 
                 // --------------------------------
-                // Generate signed download URL
+                // Generate signed B2 URL
                 // --------------------------------
 
                 const downloadUrl =
                     await createDownloadUrl(
-                        file.storage_key,
-                        file.original_name,
-                        file.mime_type
+                        file.storage_key
                     );
 
 
@@ -126,8 +127,8 @@ export default async function downloadRoutes(app) {
                         file.expires_at,
 
                     downloadUrl
-                });
 
+                });
 
             } catch (error) {
 
