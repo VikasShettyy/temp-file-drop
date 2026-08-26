@@ -4,10 +4,20 @@ import { config } from "./config.js";
 const app = buildApp();
 
 try {
+
     await app.listen({
         port: config.port,
         host: config.host
     });
-} catch {
+
+    console.log(
+        `Server running on port ${config.port}`
+    );
+
+} catch (error) {
+
+    console.error("SERVER STARTUP FAILED");
+    console.error(error);
+
     process.exit(1);
 }

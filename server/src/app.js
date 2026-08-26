@@ -23,10 +23,7 @@ export function buildApp() {
     // CORS
     app.register(cors, {
         origin: config.clientUrl,
-        methods: [
-            "GET",
-            "POST"
-        ]
+        methods: ["GET", "POST"]
     });
 
 
@@ -38,23 +35,10 @@ export function buildApp() {
 
 
     // Health check
-    app.get("/api/health", async (request, reply) => {
-
-        return reply.code(200).send({
+    app.get("/api/health", async () => {
+        return {
             status: "ok"
-        });
-
-    });
-
-
-    // Root route
-    app.get("/", async (request, reply) => {
-
-        return reply.code(200).send({
-            status: "ok",
-            message: "Temp File Drop API is running"
-        });
-
+        };
     });
 
 
@@ -64,6 +48,15 @@ export function buildApp() {
 
     // Download routes
     app.register(downloadRoutes);
+
+
+    // Root route
+    app.get("/", async () => {
+        return {
+            status: "ok",
+            message: "Temp File Drop API is running"
+        };
+    });
 
 
     return app;
