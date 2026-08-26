@@ -35,12 +35,11 @@ export function buildApp() {
 
 
     // Health check
-    app.get("/api/health", async () => {
-        return {
-            status: "ok"
-        };
+    app.get("/api/health", async (request, reply) => {
+    return reply.code(200).send({
+        status: "ok"
     });
-
+});
 
     // Upload routes
     app.register(uploadRoutes);
@@ -51,12 +50,12 @@ export function buildApp() {
 
 
     // Root route
-    app.get("/", async () => {
-        return {
-            status: "ok",
-            message: "Temp File Drop API is running"
-        };
+   app.get("/", async (request, reply) => {
+    return reply.code(200).send({
+        status: "ok",
+        message: "Temp File Drop API is running"
     });
+});
 
 
     return app;
