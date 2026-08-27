@@ -1,265 +1,126 @@
+// ========================================
+// CONFIGURATION
+// ========================================
+
 const API_URL = "https://temp-file-drop.onrender.com";
 
 
-// ============================================================
-// TOAST NOTIFICATIONS
-// ============================================================
+// ========================================
+// ELEMENTS
+// ========================================
 
-const toastContainer =
-    document.getElementById("toastContainer");
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");
+const selectButton = document.getElementById("selectButton");
+const fileList = document.getElementById("fileList");
 
+const downloadCode =
+    document.getElementById("downloadCode");
 
-function showToast(
-    title,
-    message = "",
-    type = "info",
-    duration = 4000
-) {
+const downloadButton =
+    document.getElementById("downloadButton");
 
-    // Make sure toast container exists
-    if (!toastContainer) {
-        return;
-    }
-
-    const toast =
-        document.createElement("div");
-
-    toast.className =
-        `toast ${type}`;
+const downloadStatus =
+    document.getElementById("downloadStatus");
 
 
-    const icons = {
-        success: "✓",
-        error: "!",
-        warning: "!",
-        info: "i"
-    };
+// ========================================
+// SELECT FILES
+// ========================================
+
+selectButton.addEventListener("click", () => {
+    fileInput.click();
+});
 
 
-    toast.innerHTML = `
-        <div class="toast-icon">
-            ${icons[type] || "i"}
-        </div>
+// ========================================
+// FILE PICKER
+// ========================================
 
-        <div class="toast-content">
+fileInput.addEventListener("change", () => {
 
-            <p class="toast-title">
-                ${title}
-            </p>
+    handleFiles(fileInput.files);
 
-            ${
-                message
-                    ? `
-                        <p class="toast-message">
-                            ${message}
-                        </p>
-                    `
-                    : ""
-            }
-
-        </div>
-
-        <button
-            class="toast-close"
-            type="button"
-            aria-label="Close notification"
-        >
-            ×
-        </button>
-    `;
+    // Allow selecting the same file again
+    fileInput.value = "";
+});
 
 
-    toastContainer.appendChild(toast);
-
-
-    const closeToast = () => {
-
-        if (
-            !toast ||
-            !toast.isConnected
-        ) {
-            return;
-        }
-
-        toast.classList.add("removing");
-
-        setTimeout(() => {
-
-            if (toast.isConnected) {
-                toast.remove();
-            }
-
-        }, 250);
-    };
-
-
-    toast
-        .querySelector(".toast-close")
-        .addEventListener(
-            "click",
-            closeToast
-        );
-
-
-    if (duration > 0) {
-
-        setTimeout(
-            closeToast,
-            duration
-        );
-    }
-}
-
-
-// ============================================================
-// UPLOAD
-// ============================================================
-
-const dropZone =
-    document.getElementById("dropZone");
-
-const fileInput =
-    document.getElementById("fileInput");
-
-const selectButton =
-    document.getElementById("selectButton");
-
-const fileList =
-    document.getElementById("fileList");
-
-
-// ============================================================
-// OPEN FILE PICKER
-// ============================================================
-
-selectButton.addEventListener(
-    "click",
-    () => {
-
-        fileInput.click();
-    }
-);
-
-
-// ============================================================
-// FILES SELECTED THROUGH PICKER
-// ============================================================
-
-fileInput.addEventListener(
-    "change",
-    () => {
-
-        handleFiles(
-            fileInput.files
-        );
-    }
-);
-
-
-// ============================================================
+// ========================================
 // DRAG OVER
-// ============================================================
+// ========================================
 
-dropZone.addEventListener(
-    "dragover",
-    (event) => {
+dropZone.addEventListener("dragover", (event) => {
 
-        event.preventDefault();
+    event.preventDefault();
 
-        dropZone.classList.add(
-            "dragging"
-        );
-    }
-);
+    dropZone.classList.add("dragging");
+});
 
 
-// ============================================================
+// ========================================
 // DRAG LEAVE
-// ============================================================
+// ========================================
 
-dropZone.addEventListener(
-    "dragleave",
-    () => {
+dropZone.addEventListener("dragleave", () => {
 
-        dropZone.classList.remove(
-            "dragging"
-        );
-    }
-);
+    dropZone.classList.remove("dragging");
+});
 
 
-// ============================================================
-// FILES DROPPED
-// ============================================================
+// ========================================
+// DROP
+// ========================================
 
-dropZone.addEventListener(
-    "drop",
-    (event) => {
+dropZone.addEventListener("drop", (event) => {
 
-        event.preventDefault();
+    event.preventDefault();
 
-        dropZone.classList.remove(
-            "dragging"
-        );
+    dropZone.classList.remove("dragging");
 
-        handleFiles(
-            event.dataTransfer.files
-        );
-    }
-);
+    handleFiles(event.dataTransfer.files);
+});
 
 
-// ============================================================
-// HANDLE SELECTED FILES
-// ============================================================
+// ========================================
+// HANDLE FILES
+// ========================================
 
 async function handleFiles(files) {
 
-    if (
-        !files ||
-        files.length === 0
-    ) {
+    if (!files || files.length === 0) {
         return;
     }
 
-
     fileList.innerHTML = "";
 
-
-    for (
-        const file of files
-    ) {
+    for (const file of files) {
 
         await uploadFile(file);
     }
 }
 
 
-// ============================================================
-// UPLOAD ONE FILE
-// ============================================================
+// ========================================
+// UPLOAD FILE
+// ========================================
 
 async function uploadFile(file) {
 
     const item =
         document.createElement("div");
 
-
-    item.className =
-        "file-item";
-
+    item.className = "file-item";
 
     item.innerHTML = `
         <div class="file-info">
 
-            <strong></strong>
+            <strong class="file-name"></strong>
 
             <span class="file-size"></span>
 
             <div class="progress-container">
-
                 <div class="progress-bar"></div>
-
             </div>
 
             <span class="upload-status">
@@ -269,42 +130,28 @@ async function uploadFile(file) {
         </div>
     `;
 
-
-    item.querySelector(
-        "strong"
-    ).textContent =
+    item.querySelector(".file-name").textContent =
         file.name;
 
-
-    item.querySelector(
-        ".file-size"
-    ).textContent =
-        formatFileSize(
-            file.size
-        );
-
+    item.querySelector(".file-size").textContent =
+        formatFileSize(file.size);
 
     fileList.appendChild(item);
 
 
     const progressBar =
-        item.querySelector(
-            ".progress-bar"
-        );
-
+        item.querySelector(".progress-bar");
 
     const status =
-        item.querySelector(
-            ".upload-status"
-        );
+        item.querySelector(".upload-status");
 
 
     try {
 
-        // ----------------------------------------------------
+        // ========================================
         // STEP 1
-        // Ask backend for signed B2 upload URL
-        // ----------------------------------------------------
+        // Ask Render backend for signed upload URL
+        // ========================================
 
         status.textContent =
             "Preparing upload...";
@@ -322,72 +169,71 @@ async function uploadFile(file) {
                     },
 
                     body: JSON.stringify({
-
-                        fileName:
-                            file.name,
-
-                        fileSize:
-                            file.size,
-
+                        fileName: file.name,
+                        fileSize: file.size,
                         mimeType:
                             file.type ||
                             "application/octet-stream"
-
                     })
                 }
             );
 
 
+        let initData = null;
+
+        try {
+            initData =
+                await initResponse.json();
+        } catch {
+            initData = null;
+        }
+
+
         if (!initResponse.ok) {
 
-            let errorMessage =
-                "Failed to initialize upload";
-
-
-            try {
-
-                const errorData =
-                    await initResponse.json();
-
-                errorMessage =
-                    errorData.error ||
-                    errorMessage;
-
-            } catch {
-                // Ignore invalid error response
-            }
-
-
             throw new Error(
-                errorMessage
+                initData?.error ||
+                `Server error (${initResponse.status})`
             );
         }
 
 
-        const uploadData =
-            await initResponse.json();
+        if (!initData.uploadUrl) {
+
+            throw new Error(
+                "Server did not return an upload URL."
+            );
+        }
 
 
-        // ----------------------------------------------------
+        if (!initData.accessCode) {
+
+            throw new Error(
+                "Server did not return an access code."
+            );
+        }
+
+
+        // ========================================
         // STEP 2
-        // Upload directly to Backblaze B2
-        // ----------------------------------------------------
+        // Direct upload to Backblaze B2
+        // ========================================
 
         status.textContent =
             "Uploading...";
 
 
         await uploadToB2(
-            uploadData.uploadUrl,
+            initData.uploadUrl,
             file,
             progressBar
         );
 
 
-        // ----------------------------------------------------
+        // ========================================
         // STEP 3
-        // Upload successful
-        // ----------------------------------------------------
+        // Upload complete
+        // ========================================
 
         progressBar.style.width =
             "100%";
@@ -397,77 +243,83 @@ async function uploadFile(file) {
             "Upload complete";
 
 
-        // ----------------------------------------------------
-        // Display access code
-        // ----------------------------------------------------
+        // ========================================
+        // ACCESS CODE
+        // ========================================
 
         const code =
             document.createElement("div");
-
 
         code.className =
             "access-code";
 
 
-        code.innerHTML = `
-            <span>ACCESS CODE</span>
+        const codeLabel =
+            document.createElement("span");
 
-            <strong></strong>
-
-            <small>
-                Valid for 30 days
-            </small>
-        `;
+        codeLabel.textContent =
+            "ACCESS CODE";
 
 
-        // Don't inject the code through innerHTML.
-        code.querySelector(
-            "strong"
-        ).textContent =
-            uploadData.accessCode;
+        const codeValue =
+            document.createElement("strong");
+
+        codeValue.textContent =
+            initData.accessCode;
+
+
+        const codeExpiry =
+            document.createElement("small");
+
+        codeExpiry.textContent =
+            "Valid for 30 days";
+
+
+        code.appendChild(codeLabel);
+        code.appendChild(codeValue);
+        code.appendChild(codeExpiry);
 
 
         item.appendChild(code);
 
 
-        // ----------------------------------------------------
-        // SUCCESS TOAST
-        // ----------------------------------------------------
+        // ========================================
+        // TOAST
+        // ========================================
 
         showToast(
-            "Upload complete",
-            `Access code: ${uploadData.accessCode}`,
-            "success",
-            7000
+            `Upload complete • Code: ${initData.accessCode}`,
+            "success"
         );
+
 
     } catch (error) {
 
-        status.textContent =
-            "Upload failed. Please try again.";
+        console.error(
+            "Upload failed:",
+            error
+        );
 
 
         progressBar.style.width =
             "0%";
 
 
-        // ----------------------------------------------------
-        // ERROR TOAST
-        // ----------------------------------------------------
+        status.textContent =
+            "Upload failed";
+
 
         showToast(
-            "Upload failed",
-            error.message ||
-            "Please try again.",
+            getUploadErrorMessage(error),
             "error"
         );
     }
 }
 
 
-// ============================================================
-// UPLOAD DIRECTLY TO BACKBLAZE B2
-// ============================================================
+// ========================================
+// UPLOAD TO BACKBLAZE B2
+// ========================================
 
 function uploadToB2(
     uploadUrl,
@@ -482,6 +334,10 @@ function uploadToB2(
                 new XMLHttpRequest();
 
 
+            // ====================================
+            // Open PUT request
+            // ====================================
+
             xhr.open(
                 "PUT",
                 uploadUrl,
@@ -489,16 +345,28 @@ function uploadToB2(
             );
 
 
-            // ------------------------------------------------
-            // Upload progress
-            // ------------------------------------------------
+            // ====================================
+            // IMPORTANT
+            // Must match the ContentType used
+            // while creating the signed URL.
+            // ====================================
 
-            xhr.upload.onprogress =
+            xhr.setRequestHeader(
+                "Content-Type",
+                file.type ||
+                "application/octet-stream"
+            );
+
+
+            // ====================================
+            // Upload progress
+            // ====================================
+
+            xhr.upload.addEventListener(
+                "progress",
                 (event) => {
 
-                    if (
-                        !event.lengthComputable
-                    ) {
+                    if (!event.lengthComputable) {
                         return;
                     }
 
@@ -512,14 +380,16 @@ function uploadToB2(
 
                     progressBar.style.width =
                         `${percentage}%`;
-                };
+                }
+            );
 
 
-            // ------------------------------------------------
-            // Upload completed
-            // ------------------------------------------------
+            // ====================================
+            // Successful response
+            // ====================================
 
-            xhr.onload =
+            xhr.addEventListener(
+                "load",
                 () => {
 
                     if (
@@ -533,42 +403,72 @@ function uploadToB2(
 
                         reject(
                             new Error(
-                                `B2 upload failed: ${xhr.status}`
+                                `B2 upload failed (${xhr.status})`
                             )
                         );
                     }
-                };
+                }
+            );
 
 
-            // ------------------------------------------------
-            // Network error
-            // ------------------------------------------------
+            // ====================================
+            // Network / CORS error
+            // ====================================
 
-            xhr.onerror =
+            xhr.addEventListener(
+                "error",
                 () => {
 
                     reject(
                         new Error(
-                            "Network error while uploading"
+                            "Could not connect to Backblaze B2. Check your B2 CORS configuration."
                         )
                     );
-                };
+                }
+            );
 
 
-            // ------------------------------------------------
+            // ====================================
             // Upload cancelled
-            // ------------------------------------------------
+            // ====================================
 
-            xhr.onabort =
+            xhr.addEventListener(
+                "abort",
                 () => {
 
                     reject(
                         new Error(
-                            "Upload cancelled"
+                            "Upload was cancelled."
                         )
                     );
-                };
+                }
+            );
 
+
+            // ====================================
+            // Timeout
+            // ====================================
+
+            xhr.timeout =
+                30 * 60 * 1000;
+
+
+            xhr.addEventListener(
+                "timeout",
+                () => {
+
+                    reject(
+                        new Error(
+                            "Upload timed out."
+                        )
+                    );
+                }
+            );
+
+
+            // ====================================
+            // Start upload
+            // ====================================
 
             xhr.send(file);
         }
@@ -576,63 +476,19 @@ function uploadToB2(
 }
 
 
-// ============================================================
+// ========================================
 // DOWNLOAD
-// ============================================================
+// ========================================
 
-const downloadCode =
-    document.getElementById(
-        "downloadCode"
-    );
-
-
-const downloadButton =
-    document.getElementById(
-        "downloadButton"
-    );
+downloadButton.addEventListener(
+    "click",
+    downloadFile
+);
 
 
-const downloadStatus =
-    document.getElementById(
-        "downloadStatus"
-    );
-
-
-// ============================================================
-// DOWNLOAD EVENT LISTENERS
-// ============================================================
-
-if (
-    downloadCode &&
-    downloadButton &&
-    downloadStatus
-) {
-
-    downloadButton.addEventListener(
-        "click",
-        downloadFile
-    );
-
-
-    // Allow pressing Enter
-    downloadCode.addEventListener(
-        "keydown",
-        (event) => {
-
-            if (
-                event.key === "Enter"
-            ) {
-
-                downloadFile();
-            }
-        }
-    );
-}
-
-
-// ============================================================
-// DOWNLOAD FILE
-// ============================================================
+// ========================================
+// DOWNLOAD FUNCTION
+// ========================================
 
 async function downloadFile() {
 
@@ -640,26 +496,19 @@ async function downloadFile() {
         downloadCode.value.trim();
 
 
-    // --------------------------------------------------------
-    // Validate 4-digit code
-    // --------------------------------------------------------
+    // ========================================
+    // Validate code
+    // ========================================
 
-    if (
-        !/^\d{4}$/.test(
-            accessCode
-        )
-    ) {
+    if (!/^\d{4}$/.test(accessCode)) {
 
         downloadStatus.textContent =
             "Enter a valid 4-digit code.";
 
-
         showToast(
-            "Invalid code",
             "Enter a valid 4-digit access code.",
-            "warning"
+            "error"
         );
-
 
         return;
     }
@@ -675,10 +524,9 @@ async function downloadFile() {
 
     try {
 
-        // ----------------------------------------------------
-        // STEP 1
-        // Ask backend for signed download URL
-        // ----------------------------------------------------
+        // ====================================
+        // Ask Render for signed download URL
+        // ====================================
 
         const response =
             await fetch(
@@ -698,31 +546,44 @@ async function downloadFile() {
             );
 
 
-        const data =
-            await response.json();
+        let data = null;
 
 
-        // ----------------------------------------------------
-        // Handle backend errors
-        // ----------------------------------------------------
+        try {
+
+            data =
+                await response.json();
+
+        } catch {
+
+            data = null;
+        }
+
 
         if (!response.ok) {
 
             throw new Error(
-                data.error ||
-                "Download failed"
+                data?.error ||
+                `Download failed (${response.status})`
             );
         }
 
 
-        // ----------------------------------------------------
-        // STEP 2
-        // Start download
-        // ----------------------------------------------------
+        if (!data.downloadUrl) {
+
+            throw new Error(
+                "Server did not return a download URL."
+            );
+        }
+
 
         downloadStatus.textContent =
             `Downloading ${data.fileName}...`;
 
+
+        // ====================================
+        // Create temporary download link
+        // ====================================
 
         const link =
             document.createElement("a");
@@ -733,17 +594,19 @@ async function downloadFile() {
 
 
         link.download =
-            data.fileName;
+            data.fileName ||
+            "download";
 
 
-        // Important for browsers
+        link.target =
+            "_self";
+
+
         link.style.display =
             "none";
 
 
-        document.body.appendChild(
-            link
-        );
+        document.body.appendChild(link);
 
 
         link.click();
@@ -752,39 +615,36 @@ async function downloadFile() {
         link.remove();
 
 
+        // ====================================
+        // Success
+        // ====================================
+
         downloadStatus.textContent =
             "Download started.";
 
 
-        // ----------------------------------------------------
-        // SUCCESS TOAST
-        // ----------------------------------------------------
-
         showToast(
-            "Download started",
-            data.fileName,
+            "Download started.",
             "success"
         );
 
 
     } catch (error) {
 
-        downloadStatus.textContent =
-            error.message ||
-            "Download failed.";
-
-
-        // ----------------------------------------------------
-        // ERROR TOAST
-        // ----------------------------------------------------
-
-        showToast(
-            "Download failed",
-            error.message ||
-            "Unable to download the file.",
-            "error"
+        console.error(
+            "Download failed:",
+            error
         );
 
+
+        downloadStatus.textContent =
+            error.message;
+
+
+        showToast(
+            error.message,
+            "error"
+        );
 
     } finally {
 
@@ -794,16 +654,101 @@ async function downloadFile() {
 }
 
 
-// ============================================================
-// FILE SIZE
-// ============================================================
+// ========================================
+// UPLOAD ERROR MESSAGE
+// ========================================
+
+function getUploadErrorMessage(error) {
+
+    const message =
+        error?.message || "";
+
+
+    if (
+        message.includes("CORS") ||
+        message.includes("connect to Backblaze")
+    ) {
+
+        return (
+            "Upload blocked by B2 CORS. " +
+            "Check your Backblaze bucket CORS rules."
+        );
+    }
+
+
+    if (
+        message.includes("Failed to fetch")
+    ) {
+
+        return (
+            "Unable to reach the upload server."
+        );
+    }
+
+
+    return message ||
+        "Upload failed. Please try again.";
+}
+
+
+// ========================================
+// TOAST SYSTEM
+// ========================================
+
+function showToast(
+    message,
+    type = "info"
+) {
+
+    const toast =
+        document.createElement("div");
+
+
+    toast.className =
+        `toast toast-${type}`;
+
+
+    toast.textContent =
+        message;
+
+
+    document.body.appendChild(toast);
+
+
+    // Trigger animation
+    requestAnimationFrame(() => {
+
+        toast.classList.add(
+            "toast-visible"
+        );
+    });
+
+
+    // Remove after 4 seconds
+    setTimeout(() => {
+
+        toast.classList.remove(
+            "toast-visible"
+        );
+
+
+        setTimeout(() => {
+
+            toast.remove();
+
+        }, 300);
+
+    }, 4000);
+}
+
+
+// ========================================
+// FORMAT FILE SIZE
+// ========================================
 
 function formatFileSize(bytes) {
 
-    if (
-        bytes === 0
-    ) {
-
+    if (bytes === 0) {
         return "0 Bytes";
     }
 
@@ -826,11 +771,8 @@ function formatFileSize(bytes) {
 
     return (
         bytes /
-        Math.pow(
-            1024,
-            index
-        )
-    ).toFixed(2)
-    + " "
-    + units[index];
+        Math.pow(1024, index)
+    ).toFixed(2) +
+        " " +
+        units[index];
 }
