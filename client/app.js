@@ -14,28 +14,19 @@ const fileInput = document.getElementById("fileInput");
 const selectButton = document.getElementById("selectButton");
 const fileList = document.getElementById("fileList");
 
-const downloadCode =
-    document.getElementById("downloadCode");
-
-const downloadButton =
-    document.getElementById("downloadButton");
-
-const downloadStatus =
-    document.getElementById("downloadStatus");
+const downloadCode = document.getElementById("downloadCode");
+const downloadButton = document.getElementById("downloadButton");
+const downloadStatus = document.getElementById("downloadStatus");
 
 
 // ========================================
-// SELECT FILES
+// FILE PICKER
 // ========================================
 
 selectButton.addEventListener("click", () => {
     fileInput.click();
 });
 
-
-// ========================================
-// FILE PICKER
-// ========================================
 
 fileInput.addEventListener("change", () => {
 
@@ -47,7 +38,7 @@ fileInput.addEventListener("change", () => {
 
 
 // ========================================
-// DRAG OVER
+// DRAG & DROP
 // ========================================
 
 dropZone.addEventListener("dragover", (event) => {
@@ -58,19 +49,11 @@ dropZone.addEventListener("dragover", (event) => {
 });
 
 
-// ========================================
-// DRAG LEAVE
-// ========================================
-
 dropZone.addEventListener("dragleave", () => {
 
     dropZone.classList.remove("dragging");
 });
 
-
-// ========================================
-// DROP
-// ========================================
 
 dropZone.addEventListener("drop", (event) => {
 
@@ -94,8 +77,8 @@ async function handleFiles(files) {
 
     fileList.innerHTML = "";
 
+    // Upload files one at a time
     for (const file of files) {
-
         await uploadFile(file);
     }
 }
@@ -107,8 +90,7 @@ async function handleFiles(files) {
 
 async function uploadFile(file) {
 
-    const item =
-        document.createElement("div");
+    const item = document.createElement("div");
 
     item.className = "file-item";
 
@@ -130,11 +112,13 @@ async function uploadFile(file) {
         </div>
     `;
 
+
     item.querySelector(".file-name").textContent =
         file.name;
 
     item.querySelector(".file-size").textContent =
         formatFileSize(file.size);
+
 
     fileList.appendChild(item);
 
@@ -150,55 +134,56 @@ async function uploadFile(file) {
 
         // ========================================
         // STEP 1
-        // Ask Render backend for signed upload URL
+        // Ask Render backend for upload URL
         // ========================================
 
         status.textContent =
             "Preparing upload...";
 
 
-        const initResponse =
-            await fetch(
-                `${API_URL}/api/upload/init`,
-                {
-                    method: "POST",
+        const response = await fetch(
+            `${API_URL}/api/upload/init`,
+            {
+                method: "POST",
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-                    body: JSON.stringify({
-                        fileName: file.name,
-                        fileSize: file.size,
-                        mimeType:
-                            file.type ||
-                            "application/octet-stream"
-                    })
-                }
-            );
+                body: JSON.stringify({
+
+                    fileName: file.name,
+
+                    fileSize: file.size,
+
+                    mimeType:
+                        file.type ||
+                        "application/octet-stream"
+                })
+            }
+        );
 
 
-        let initData = null;
+        let data = null;
+
 
         try {
-            initData =
-                await initResponse.json();
+            data = await response.json();
         } catch {
-            initData = null;
+            data = null;
         }
 
 
-        if (!initResponse.ok) {
+        if (!response.ok) {
 
             throw new Error(
-                initData?.error ||
-                `Server error (${initResponse.status})`
+                data?.error ||
+                `Server error (${response.status})`
             );
         }
 
 
-        if (!initData.uploadUrl) {
+        if (!data.uploadUrl) {
 
             throw new Error(
                 "Server did not return an upload URL."
@@ -206,7 +191,7 @@ async function uploadFile(file) {
         }
 
 
-        if (!initData.accessCode) {
+        if (!data.accessCode) {
 
             throw new Error(
                 "Server did not return an access code."
@@ -216,7 +201,7 @@ async function uploadFile(file) {
 
         // ========================================
         // STEP 2
-        // Direct upload to Backblaze B2
+        // Upload directly to B2
         // ========================================
 
         status.textContent =
@@ -224,7 +209,7 @@ async function uploadFile(file) {
 
 
         await uploadToB2(
-            initData.uploadUrl,
+            data.uploadUrl,
             file,
             progressBar
         );
@@ -235,9 +220,7 @@ async function uploadFile(file) {
         // Upload complete
         // ========================================
 
-        progressBar.style.width =
-            "100%";
-
+        progressBar.style.width = "100%";
 
         status.textContent =
             "Upload complete";
@@ -247,59 +230,52 @@ async function uploadFile(file) {
         // ACCESS CODE
         // ========================================
 
-        const code =
+        const codeBox =
             document.createElement("div");
 
-        code.className =
+        codeBox.className =
             "access-code";
 
 
-        const codeLabel =
+        const label =
             document.createElement("span");
 
-        codeLabel.textContent =
+        label.textContent =
             "ACCESS CODE";
 
 
-        const codeValue =
+        const code =
             document.createElement("strong");
 
-        codeValue.textContent =
-            initData.accessCode;
+        code.textContent =
+            data.accessCode;
 
 
-        const codeExpiry =
+        const expiry =
             document.createElement("small");
 
-        codeExpiry.textContent =
+        expiry.textContent =
             "Valid for 30 days";
 
 
-        code.appendChild(codeLabel);
-        code.appendChild(codeValue);
-        code.appendChild(codeExpiry);
+        codeBox.appendChild(label);
+        codeBox.appendChild(code);
+        codeBox.appendChild(expiry);
 
 
-        item.appendChild(code);
+        item.appendChild(codeBox);
 
 
         // ========================================
-        // TOAST
+        // SUCCESS TOAST
         // ========================================
 
         showToast(
-            `Upload complete • Code: ${initData.accessCode}`,
+            `Upload complete • Code: ${data.accessCode}`,
             "success"
         );
 
-
     } catch (error) {
-
-        console.error(
-            "Upload failed:",
-            error
-        );
-
 
         progressBar.style.width =
             "0%";
@@ -318,7 +294,7 @@ async function uploadFile(file) {
 
 
 // ========================================
-// UPLOAD TO BACKBLAZE B2
+// DIRECT B2 UPLOAD
 // ========================================
 
 function uploadToB2(
@@ -334,10 +310,6 @@ function uploadToB2(
                 new XMLHttpRequest();
 
 
-            // ====================================
-            // Open PUT request
-            // ====================================
-
             xhr.open(
                 "PUT",
                 uploadUrl,
@@ -345,11 +317,9 @@ function uploadToB2(
             );
 
 
-            // ====================================
-            // IMPORTANT
-            // Must match the ContentType used
-            // while creating the signed URL.
-            // ====================================
+            // IMPORTANT:
+            // Must match the Content-Type
+            // used while creating the signed URL.
 
             xhr.setRequestHeader(
                 "Content-Type",
@@ -358,9 +328,9 @@ function uploadToB2(
             );
 
 
-            // ====================================
-            // Upload progress
-            // ====================================
+            // ========================================
+            // PROGRESS
+            // ========================================
 
             xhr.upload.addEventListener(
                 "progress",
@@ -372,10 +342,7 @@ function uploadToB2(
 
 
                     const percentage =
-                        (
-                            event.loaded /
-                            event.total
-                        ) * 100;
+                        (event.loaded / event.total) * 100;
 
 
                     progressBar.style.width =
@@ -384,9 +351,9 @@ function uploadToB2(
             );
 
 
-            // ====================================
-            // Successful response
-            // ====================================
+            // ========================================
+            // SUCCESS
+            // ========================================
 
             xhr.addEventListener(
                 "load",
@@ -411,9 +378,9 @@ function uploadToB2(
             );
 
 
-            // ====================================
-            // Network / CORS error
-            // ====================================
+            // ========================================
+            // NETWORK / CORS ERROR
+            // ========================================
 
             xhr.addEventListener(
                 "error",
@@ -421,16 +388,16 @@ function uploadToB2(
 
                     reject(
                         new Error(
-                            "Could not connect to Backblaze B2. Check your B2 CORS configuration."
+                            "Could not connect to Backblaze B2. Check B2 CORS settings."
                         )
                     );
                 }
             );
 
 
-            // ====================================
-            // Upload cancelled
-            // ====================================
+            // ========================================
+            // ABORT
+            // ========================================
 
             xhr.addEventListener(
                 "abort",
@@ -445,9 +412,9 @@ function uploadToB2(
             );
 
 
-            // ====================================
-            // Timeout
-            // ====================================
+            // ========================================
+            // TIMEOUT
+            // ========================================
 
             xhr.timeout =
                 30 * 60 * 1000;
@@ -466,10 +433,6 @@ function uploadToB2(
             );
 
 
-            // ====================================
-            // Start upload
-            // ====================================
-
             xhr.send(file);
         }
     );
@@ -480,10 +443,27 @@ function uploadToB2(
 // DOWNLOAD
 // ========================================
 
-downloadButton.addEventListener(
-    "click",
-    downloadFile
-);
+if (
+    downloadButton &&
+    downloadCode
+) {
+
+    downloadButton.addEventListener(
+        "click",
+        downloadFile
+    );
+
+
+    downloadCode.addEventListener(
+        "keydown",
+        (event) => {
+
+            if (event.key === "Enter") {
+                downloadFile();
+            }
+        }
+    );
+}
 
 
 // ========================================
@@ -497,7 +477,7 @@ async function downloadFile() {
 
 
     // ========================================
-    // Validate code
+    // VALIDATE CODE
     // ========================================
 
     if (!/^\d{4}$/.test(accessCode)) {
@@ -524,9 +504,9 @@ async function downloadFile() {
 
     try {
 
-        // ====================================
-        // Ask Render for signed download URL
-        // ====================================
+        // ========================================
+        // ASK RENDER FOR DOWNLOAD URL
+        // ========================================
 
         const response =
             await fetch(
@@ -550,12 +530,8 @@ async function downloadFile() {
 
 
         try {
-
-            data =
-                await response.json();
-
+            data = await response.json();
         } catch {
-
             data = null;
         }
 
@@ -577,13 +553,13 @@ async function downloadFile() {
         }
 
 
+        // ========================================
+        // START DOWNLOAD
+        // ========================================
+
         downloadStatus.textContent =
-            `Downloading ${data.fileName}...`;
+            `Starting ${data.fileName}...`;
 
-
-        // ====================================
-        // Create temporary download link
-        // ====================================
 
         const link =
             document.createElement("a");
@@ -599,7 +575,11 @@ async function downloadFile() {
 
 
         link.target =
-            "_self";
+            "_blank";
+
+
+        link.rel =
+            "noopener";
 
 
         link.style.display =
@@ -615,10 +595,6 @@ async function downloadFile() {
         link.remove();
 
 
-        // ====================================
-        // Success
-        // ====================================
-
         downloadStatus.textContent =
             "Download started.";
 
@@ -630,12 +606,6 @@ async function downloadFile() {
 
 
     } catch (error) {
-
-        console.error(
-            "Download failed:",
-            error
-        );
-
 
         downloadStatus.textContent =
             error.message;
@@ -666,12 +636,13 @@ function getUploadErrorMessage(error) {
 
     if (
         message.includes("CORS") ||
-        message.includes("connect to Backblaze")
+        message.includes("Backblaze") ||
+        message.includes("B2")
     ) {
 
         return (
             "Upload blocked by B2 CORS. " +
-            "Check your Backblaze bucket CORS rules."
+            "Add your Cloudflare Pages domain to the B2 CORS rules."
         );
     }
 
@@ -686,8 +657,10 @@ function getUploadErrorMessage(error) {
     }
 
 
-    return message ||
-        "Upload failed. Please try again.";
+    return (
+        message ||
+        "Upload failed. Please try again."
+    );
 }
 
 
@@ -715,7 +688,6 @@ function showToast(
     document.body.appendChild(toast);
 
 
-    // Trigger animation
     requestAnimationFrame(() => {
 
         toast.classList.add(
@@ -724,7 +696,6 @@ function showToast(
     });
 
 
-    // Remove after 4 seconds
     setTimeout(() => {
 
         toast.classList.remove(
@@ -733,9 +704,7 @@ function showToast(
 
 
         setTimeout(() => {
-
             toast.remove();
-
         }, 300);
 
     }, 4000);
@@ -743,7 +712,7 @@ function showToast(
 
 
 // ========================================
-// FORMAT FILE SIZE
+// FILE SIZE
 // ========================================
 
 function formatFileSize(bytes) {

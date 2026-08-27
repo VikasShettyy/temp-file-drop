@@ -1,10 +1,12 @@
-import { hashAccessCode } from "../security.js";
+import { hashAccessCode }
+    from "../security.js";
 
 import {
     createDownloadUrl
 } from "../storage.js";
 
-import { pool } from "../database.js";
+import { pool }
+    from "../database.js";
 
 
 export default async function downloadRoutes(app) {
@@ -21,21 +23,24 @@ export default async function downloadRoutes(app) {
 
 
                 // --------------------------------
-                // Validate access code
+                // Validate code
                 // --------------------------------
 
                 if (
                     typeof accessCode !== "string" ||
                     !/^\d{4}$/.test(accessCode)
                 ) {
+
                     return reply.code(400).send({
-                        error: "Invalid access code"
+                        error:
+                            "Invalid access code"
                     });
+
                 }
 
 
                 // --------------------------------
-                // Hash access code
+                // Hash code
                 // --------------------------------
 
                 const codeHash =
@@ -64,15 +69,15 @@ export default async function downloadRoutes(app) {
                     );
 
 
-                // --------------------------------
-                // File not found
-                // --------------------------------
-
-                if (result.rows.length === 0) {
+                if (
+                    result.rows.length === 0
+                ) {
 
                     return reply.code(404).send({
-                        error: "Invalid access code"
+                        error:
+                            "Invalid access code"
                     });
+
                 }
 
 
@@ -90,8 +95,10 @@ export default async function downloadRoutes(app) {
                 ) {
 
                     return reply.code(410).send({
-                        error: "This file has expired"
+                        error:
+                            "This file has expired"
                     });
+
                 }
 
 
@@ -101,12 +108,13 @@ export default async function downloadRoutes(app) {
 
                 const downloadUrl =
                     await createDownloadUrl(
-                        file.storage_key
+                        file.storage_key,
+                        file.original_name
                     );
 
 
                 // --------------------------------
-                // Return download information
+                // Return information
                 // --------------------------------
 
                 return reply.code(200).send({
@@ -132,14 +140,18 @@ export default async function downloadRoutes(app) {
 
             } catch (error) {
 
-                // Do not expose internal errors
-                // to the browser.
+                console.error(
+                    "Download initialization failed:",
+                    error
+                );
 
                 return reply.code(500).send({
                     error:
                         "Unable to generate download link"
                 });
+
             }
+
         }
     );
 }

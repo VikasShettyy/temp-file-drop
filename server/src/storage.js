@@ -12,21 +12,22 @@ import {
 
 const s3 = new S3Client({
 
-    endpoint: process.env.B2_ENDPOINT,
+    endpoint:
+        process.env.B2_ENDPOINT,
 
-    region: "us-east-005",
+    region:
+        "us-east-005",
 
     credentials: {
+
         accessKeyId:
             process.env.B2_KEY_ID,
 
         secretAccessKey:
             process.env.B2_APPLICATION_KEY
-    },
 
-    // Important for Backblaze B2 S3-compatible API
-    requestChecksumCalculation: "WHEN_REQUIRED",
-    responseChecksumValidation: "WHEN_REQUIRED"
+    }
+
 });
 
 
@@ -34,9 +35,10 @@ const bucket =
     process.env.B2_BUCKET_NAME;
 
 
-// ============================================================
-// CREATE UPLOAD URL
-// ============================================================
+
+// --------------------------------
+// Upload URL
+// --------------------------------
 
 export async function createUploadUrl(
     storageKey,
@@ -67,20 +69,15 @@ export async function createUploadUrl(
 }
 
 
-// ============================================================
-// CREATE DOWNLOAD URL
-// ============================================================
+
+// --------------------------------
+// Download URL
+// --------------------------------
 
 export async function createDownloadUrl(
     storageKey,
     fileName
 ) {
-
-    const safeFileName =
-        String(fileName || "download")
-            .replace(/[\r\n"]/g, "")
-            .replace(/[\\/:*?<>|]/g, "_");
-
 
     const command =
         new GetObjectCommand({
@@ -90,7 +87,7 @@ export async function createDownloadUrl(
             Key: storageKey,
 
             ResponseContentDisposition:
-                `attachment; filename="${safeFileName}"`
+                `attachment; filename="${encodeURIComponent(fileName)}"`
 
         });
 
@@ -105,9 +102,10 @@ export async function createDownloadUrl(
 }
 
 
-// ============================================================
-// DELETE FILE
-// ============================================================
+
+// --------------------------------
+// Delete file
+// --------------------------------
 
 export async function deleteFile(
     storageKey

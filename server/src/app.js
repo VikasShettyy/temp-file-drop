@@ -16,47 +16,67 @@ export function buildApp() {
     });
 
 
+    // --------------------------------
     // Security headers
+    // --------------------------------
+
     app.register(helmet);
 
 
+    // --------------------------------
     // CORS
+    // --------------------------------
+
     app.register(cors, {
+
         origin: config.clientUrl,
-        methods: ["GET", "POST"]
+
+        methods: [
+            "GET",
+            "POST",
+            "OPTIONS"
+        ]
+
     });
 
 
+    // --------------------------------
     // Rate limiting
+    // --------------------------------
+
     app.register(rateLimit, {
+
         max: 100,
+
         timeWindow: "1 minute"
+
     });
 
 
+    // --------------------------------
     // Health check
-    app.get("/api/health", async (request, reply) => {
-    return reply.code(200).send({
-        status: "ok"
-    });
-});
+    // --------------------------------
 
-    // Upload routes
+    app.get(
+        "/api/health",
+        async () => {
+
+            return {
+                status: "ok"
+            };
+
+        }
+    );
+
+
+    // --------------------------------
+    // Routes
+    // --------------------------------
+
     app.register(uploadRoutes);
 
-
-    // Download routes
     app.register(downloadRoutes);
 
-
-    // Root route
-   app.get("/", async (request, reply) => {
-    return reply.code(200).send({
-        status: "ok",
-        message: "Temp File Drop API is running"
-    });
-});
-    
 
     return app;
 }

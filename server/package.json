@@ -14,6 +14,7 @@
     "@fastify/cors": "^11.0.0",
     "@fastify/helmet": "^13.0.0",
     "@fastify/rate-limit": "^10.3.0",
+    "backblaze-b2": "^1.7.1",
     "dotenv": "^17.0.0",
     "fastify": "^5.0.0",
     "pg": "^8.23.0"

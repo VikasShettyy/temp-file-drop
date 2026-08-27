@@ -2,7 +2,9 @@ import crypto from "node:crypto";
 
 
 export function generateAccessCode() {
-    const number = crypto.randomInt(0, 10000);
+
+    const number =
+        crypto.randomInt(0, 10000);
 
     return number
         .toString()
@@ -11,6 +13,7 @@ export function generateAccessCode() {
 
 
 export function hashAccessCode(code) {
+
     return crypto
         .createHash("sha256")
         .update(code)
@@ -19,10 +22,12 @@ export function hashAccessCode(code) {
 
 
 export function generateFileId() {
+
     return crypto.randomUUID();
 }
 
 
 export function generateStorageKey(fileId) {
+
     return `files/${fileId}`;
 }
