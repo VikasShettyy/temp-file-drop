@@ -22,14 +22,15 @@ const corsRules = [
         ],
 
         allowedOperations: [
-            "b2_upload_file",
-            "b2_download_file_by_name",
-            "b2_download_file_by_id"
+            "s3_put_object",
+            "s3_get_object",
+            "s3_head_object"
         ],
 
         exposeHeaders: [
-            "x-bz-content-sha1",
-            "ETag"
+            "ETag",
+            "Content-Length",
+            "Content-Type"
         ],
 
         maxAgeSeconds: 3600
@@ -44,42 +45,26 @@ async function main() {
     const auth = await b2.authorize();
 
     console.log("Authorized.");
+    console.log("Account ID:", auth.data.accountId);
+
+    console.log("\nUpdating S3 CORS rules...");
 
     console.log(
-        "Account ID:",
-        auth.data.accountId
+        JSON.stringify(corsRules, null, 2)
     );
 
+    const result = await b2.updateBucket({
 
-    console.log("\nCORS configuration:");
+        accountId:
+            auth.data.accountId,
 
-    console.log(
-        JSON.stringify(
-            corsRules,
-            null,
-            2
-        )
-    );
+        bucketId,
 
+        bucketType:
+            "allPrivate",
 
-    console.log("\nUpdating bucket CORS...");
-
-
-    const result =
-        await b2.updateBucket({
-
-            accountId:
-                auth.data.accountId,
-
-            bucketId,
-
-            bucketType:
-                "allPrivate",
-
-            corsRules
-
-        });
-
+        corsRules
+    });
 
     console.log(
         "\n================================="
@@ -90,9 +75,8 @@ async function main() {
     );
 
     console.log(
-        "=================================\n"
+        "================================="
     );
-
 
     console.log(
         JSON.stringify(
@@ -110,9 +94,7 @@ main().catch(error => {
         "\n================================="
     );
 
-    console.error(
-        "ERROR"
-    );
+    console.error("ERROR");
 
     console.error(
         "================================="
