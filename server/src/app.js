@@ -56,10 +56,7 @@ export function buildApp() {
         message: "Temp File Drop API is running"
     });
 });
-    app.register(cors, {
-    origin: config.clientUrl,
-    methods: ["GET", "POST"]
-});
+    
 
     return app;
 }
